@@ -1,0 +1,58 @@
+body{
+    margin-top: 30px;
+    margin-bottom: 10px;
+    background: url(https://s20.postimg.cc/mmo8vjcd7/1350.jpg);
+    background-repeat: no-repeat;
+}
+.jumbotron{
+    height: 300px;
+}
+.row-2{
+    margin-top: 20px;
+    margin-bottom: 25px;
+    height: 550px;
+}
+.ebook{
+    background-color: whitesmoke;
+}
+.ebook h3{
+    margin-top: 30px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.nama{
+    font-size: 25px;
+    /* font-family: 'Butterfly Kids', cursive; */
+    font-family: 'Great Vibes', cursive;
+    font-family: 'Poiret One', cursive;
+    font-family: 'Satisfy', cursive;
+}
+
+#avatar{
+    filter: grayscale(100%);
+}
+#avatar:hover{
+    filter: grayscale(0%);
+}
+hr{
+    width: 200px;
+    color: blueviolet;
+    height: 3px;
+}
+.row-3{
+    font-size: 12px;
+}
+.footer{
+    width: 1125px;
+    height: 80px;
+    background-color: #373C43;
+}
+.contact-r{
+    display: inline-block;
+    margin-left: 10px;
+    color: white;
+    font-size: 13px;
+}
+.contact-r a:hover{
+    display: block;
+}
