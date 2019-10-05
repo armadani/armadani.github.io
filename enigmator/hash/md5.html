@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>MD5 - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/md5.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/hmac-md5.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.md5;
+
+	execute = function(){
+		if(!$("#btn-checksum").hasClass("active"))
+		{
+			var input = $("#input").val();
+			var key = $("#key").val();
+			if($("#div-hmac").css("display") == "none")
+				var str = method(input);
+			else
+				var str = method(input, key);
+			$("#output").val(str);
+		}
+		else
+		{
+			if($("#div-hmac").css("display") != "none")
+				var key = $("#key").val();
+			else
+				var key = undefined;
+			var worker = new Worker("../js/worker/md5.js");
+			showLoader();
+			worker.onmessage = function(e){
+				$("#output").val(e.data);
+				self.hideLoader();
+			}
+			worker.postMessage({input:file,hmac:key});
+		}
+	}
+
+	$(document).ready(function(){
+		$("#input, #key").bind("change keydown keyup", function(){
+			if(!$("#btn-checksum").hasClass("active"))
+				execute();
+		})
+
+		$("#btn-enc").click(function(){
+			execute();
+		})
+
+		$("#btn-hmac").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$("#div-hmac").show();
+				$(this).addClass("active");
+				$("#key").focus();
+			}
+			else
+			{
+				$("#div-hmac").hide();
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#btn-checksum").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$("#input").hide();
+				$(".input-upload").show();
+				$(this).addClass("active");
+			}
+			else
+			{
+				$("#input").show();
+				$(".input-upload").hide();
+				$(this).removeClass("active");
+			}
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="loader">
+		<div>Processing...</div>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash" class="selected"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Hash</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			
+		</ul>
+
+		<ul id="menu-hash">
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>MD5</h2>
+		</div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<input type="file" id="checksum" class="hide">
+		<div class="input-upload hide">
+			<label for="checksum" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
+
+		<div id="div-hmac" class="hide">
+			<h5>Passphrase :</h5>
+			<input type="text" id="key">
+			<div class="clear"></div>
+		</div>
+
+		<button id="btn-enc" class="blue left">Calculate</button>
+		<button id="btn-hmac" class="left grey">Use HMAC</button>
+		<button id="btn-checksum" class="right grey opt">File Checksum</button>
+		<div class="clear"></div>
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+	</div></center>
+	</div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>RailFence - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/qgr.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.railfence;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var n = $("#n").val();
+		if(isNaN(n)){
+			alert("Level must be an integer");
+			return false;
+		}
+		if(n <= 0){
+			alert("Level must be greater than 0");
+			return false;
+		}
+
+		var str = methodType(input, n);
+
+		$("#output").show();
+		$("#div-brute-force").empty();
+		$("#div-brute-force").hide();
+		$("#output").val(str);
+	}
+
+	function bruteForce(){
+		var ind = 1;
+		var input = $("#input").val();
+		var nMax = $("#n-max").val();
+		var result = [];
+
+		$("#output").hide();
+		$("#div-brute-force").empty();
+		$("#div-brute-force").show();
+		for(var n=2; n <= nMax; n++){
+			var plain = Enigmator.railfence.dec(input, n);
+			var score = Enigmator.cryptanalysis.scoreText(plain);
+			result.push([n, plain, score]);
+		}
+		result.sort(function(a, b){ return b[2] - a[2] });
+		for(var i=0; i < result.length; i++){
+			var element = "<div id='output-"+ind+"'><h5 class='lighter'>Zig-Zag Level = "+result[i][0]+"</h5><textarea class='short' readonly>"+result[i][1]+"</textarea></div>";
+			$("#div-brute-force").append(element);
+			ind++;
+		}
+	}
+
+	$(document).ready(function(){
+		$("#btn-brute-force").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$("#div-n").hide();
+				$("#div-n-max").show();
+				$(this).addClass("active");
+				$("#btn-enc").prop("disabled",true);
+				$("#n-max").focus();
+			}
+			else
+			{
+				$("#div-n").show();
+				$("#div-n-max").hide();
+				$(this).removeClass("active");
+				$("#btn-enc").prop("disabled",false);
+			}
+		})
+		
+		$("#btn-dec-railfence").click(function(){
+			if($("#btn-brute-force").hasClass("active"))
+			{
+				bruteForce();
+			}
+			else
+			{
+				execute(method.dec);
+			}
+		})
+		$("#btn-clear").click(function(){
+			$("#output").show();
+			$("#div-brute-force").empty();
+			$("#div-brute-force").hide();
+		})
+		$("#btn-enc").prop("disabled", false);
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>RailFence Cipher</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div class="clear"></div>
+		<div id="div-n">
+			<h5 class="left">Zig-Zag Level :</h5>
+			<input class="small" type="text" id="n" value="2" maxlength="2">
+			<div class="clear"></div>
+		</div>
+		<div id="div-n-max" class="hide">
+			<h5 class="left">Brute-Force until Level :</h5>
+			<input class="small" type="text" id="n-max" value="20" maxlength="2">
+			<div class="clear"></div>
+		</div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec-railfence" class="blue left">Decrypt</button>
+		<button id="btn-brute-force" class="grey left">Brute-Force Zig-Zag Level</button>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+		<div id="div-brute-force">
+			
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

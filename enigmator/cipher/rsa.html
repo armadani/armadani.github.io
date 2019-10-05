@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>RSA (Encrypt/Decrypt) - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/core-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/enc-base64-min.js"></script>
+<script type="text/javascript" src="../js/lib/jsencrypt/jsencrypt.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.rsa;
+
+	var input = "";
+	var privKey = "";
+	var pubKey = "";
+
+	execute = function(methodType){
+		
+		if(!$("#btn-input-file").hasClass("active")){
+			input = $("#input").val();
+		}
+		
+		if(!$("#btn-priv-file").hasClass("active")){
+			privKey = $("#priv-key").val();
+		}
+		
+		if(!$("#btn-pub-file").hasClass("active")){
+			pubKey = $("#pub-key").val();
+		}
+
+		if(methodType === method.enc){
+			if(!privKey && !pubKey){
+				alert("Please provide either Public Key or Private Key to Encrypt!");
+				return false;
+			}
+			if(!privKey)
+				var str = methodType(input, pubKey);
+			else 
+				var str = methodType(input, privKey);
+		}
+		else if(methodType === method.dec){
+			if(!privKey){
+				alert("Please provide Private Key to Decrypt!");
+				return false;
+			}
+			if($("#btn-input-file").hasClass("active")){
+				input = Enigmator.base64.enc(input);
+			}
+			var str = methodType(input, privKey);
+		}
+		
+		$("#output").val(str);
+		
+	}
+
+	$(document).ready(function(){
+
+		$("#btn-input-file").click(function(){
+			$("#div-input-upload").show();
+			$("#input").hide();
+		})
+		$("#btn-input-raw").click(function(){
+			$("#div-input-upload").hide();
+			$("#input").show();
+		})
+
+		$("#btn-priv-file").click(function(){
+			$("#div-priv-key-upload").show();
+			$("#priv-key").hide();
+		})
+		$("#btn-priv-raw").click(function(){
+			$("#div-priv-key-upload").hide();
+			$("#priv-key").show();
+		})
+		$("#btn-pub-file").click(function(){
+			$("#div-pub-key-upload").show();
+			$("#pub-key").hide();
+		})
+		$("#btn-pub-raw").click(function(){
+			$("#div-pub-key-upload").hide();
+			$("#pub-key").show();
+		})
+
+		$("#rsaFile").bind('change', function() {
+			var inputFile = $("#rsaFile")[0].files[0];
+			$("#div-input-upload h5").text(inputFile.name);
+
+			readFile(inputFile, function(e){
+				input = arrayBufferToStr(e.target.result);
+			});
+    	})
+    	$("#privKeyFile").bind('change', function() {
+			var privKeyFile = $("#privKeyFile")[0].files[0];
+			$("#div-priv-key-upload h5").text(privKeyFile.name);
+
+			readFile(privKeyFile, function(e){
+				privKey = arrayBufferToStr(e.target.result);
+			});
+    	})
+    	$("#pubKeyFile").bind('change', function() {
+			var pubKeyFile = $("#pubKeyFile")[0].files[0];
+			$("#div-pub-key-upload h5").text(pubKeyFile.name);
+
+			readFile(pubKeyFile, function(e){
+				pubKey = arrayBufferToStr(e.target.result);
+			});
+    	})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="loader">
+		<div>Processing...</div>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>RSA Encryption</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5 class="left">Input :</h5>
+		<div class="toggle-button">
+			<button id="btn-input-raw" class="grey active small">Text</button>
+			<button id="btn-input-file" class="grey small">File</button>
+		</div>
+		<div class="clear"></div>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<input type="file" id="rsaFile" class="hide">
+		<div class="input-upload hide" id="div-input-upload">
+			<label for="rsaFile" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
+		<h6><i>Note : When decrypting with text, input must be Base64-encoded</i></h6>
+
+		<h5 class="left">Private Key :</h5>
+		<div class="toggle-button">
+			<button id="btn-priv-raw" class="grey active small">Text</button>
+			<button id="btn-priv-file" class="grey small">File</button>
+		</div>
+		<div class="clear"></div>
+		<textarea id="priv-key" spellcheck="false" placeholder=""></textarea>
+		<input type="file" id="privKeyFile" class="hide">
+		<div class="input-upload hide" id="div-priv-key-upload">
+			<label for="privKeyFile" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
+
+		<h5 class="left">Public Key :</h5>
+		<div class="toggle-button">
+			<button id="btn-pub-raw" class="grey active small">Text</button>
+			<button id="btn-pub-file" class="grey small">File</button>
+		</div>
+		<textarea id="pub-key" spellcheck="false"></textarea>
+		<input type="file" id="pubKeyFile" class="hide">
+		<div class="input-upload hide" id="div-pub-key-upload">
+			<label for="pubKeyFile" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
+		<div class="clear"></div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+	</div></center>
+	</div>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Frequency Analysis - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.cryptanalysis;
+
+	function analyze(reg, paristocrat){
+		var regex = new RegExp(reg,"g");
+		var text = $("#input").val().replace(regex, "");
+		
+		
+		if(paristocrat){
+			text = text.replace(/\s+/g,"");
+			var charCount = text.length;
+		}
+		else {
+			var charCount = text.replace(/\s+/g, "").length;
+		}
+
+		var limit = $("#limit").val();
+		if(!limit) limit = 4;
+
+		var monogram = method.getFrequency(text);
+		var bigram = method.getFrequency(text, 2);
+		var trigram = method.getFrequency(text, 3);
+		var quadgram = method.getFrequency(text, 4);
+		var element = "";
+
+		charFreq = [], bigramFreq = [], trigramFreq = [], quadgramFreq = [];
+		for(var i in monogram)
+			charFreq.push([i, monogram[i]]);
+		charFreq.sort(function(a, b){ return b[1] - a[1]});
+
+		for(var i in bigram){
+			if(bigram[i] >= limit)
+				bigramFreq.push([i, bigram[i]]);
+		}
+		bigramFreq.sort(function(a, b){ return b[1] - a[1]});
+
+		for(var i in trigram){
+			if(trigram[i] >= limit)
+				trigramFreq.push([i, trigram[i]]);
+		}
+		trigramFreq.sort(function(a, b){ return b[1] - a[1]});
+
+		for(var i in quadgram){
+			if(quadgram[i] >= limit)
+				quadgramFreq.push([i, quadgram[i]]);
+		}
+		quadgramFreq.sort(function(a, b){ return b[1] - a[1]});
+
+		for(var i=0; i < charFreq.length; i++){
+			element += "<h5>"+charFreq[i][0]+" : <span>"+charFreq[i][1]+"</span></h5>";
+		}
+		$("#div-output #div-1-gram").html(element);
+		
+		element = "";
+		for(var i=0; i < bigramFreq.length; i++){
+			element += "<h5>"+bigramFreq[i][0]+" : <span>"+bigramFreq[i][1]+"</span></h5>";
+		}
+		$("#div-output #div-2-gram").html(element);
+
+		element = "";
+		for(var i=0; i < trigramFreq.length; i++){
+			element += "<h5>"+trigramFreq[i][0]+" : <span>"+trigramFreq[i][1]+"</span></h5>";
+		}
+		$("#div-output #div-3-gram").html(element);
+
+		element = "";
+		for(var i=0; i < quadgramFreq.length; i++){
+			element += "<h5>"+quadgramFreq[i][0]+" : <span>"+quadgramFreq[i][1]+"</span></h5>";
+		}
+		$("#div-output #div-4-gram").html(element);
+
+		$("#div-output").show();
+		$("#div-output #char-count span").text(charCount + " chars");
+	}
+
+	$(document).ready(function(){
+
+		$("#btn-analyze").click(function(){
+			var countFor = $("#btn-count-for button span").text();
+			if(countFor == "Letters only")
+				var reg = "[^A-Za-z\x20]";
+			else if(countFor == "Digits only")
+				var reg = "[^0-9\x20]";
+			else if(countFor == "Letters and Digits")
+				var reg = "[^A-Za-z0-9\x20]";
+			else
+				var reg = "";
+
+			if($("#btn-paristocrat").hasClass("active")){
+				var paristocrat = true;
+			}
+			else
+			{
+				var paristocrat = false;
+			}
+
+			analyze(reg, paristocrat);
+		})
+
+		$("#btn-options").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$(this).addClass("active");
+				$("#div-options").show();
+			}
+			else {
+				$(this).removeClass("active");
+				$("#div-options").hide();
+			}
+		})
+
+		$("#btn-paristocrat").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$(this).addClass("active");
+			}
+			else {
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#btn-clear").click(function(){
+			$("#input").val("");
+			$("#div-output").hide();
+		})
+	})
+</script>
+
+<style type="text/css">
+	div#output {
+		margin: 5px;
+		padding: 10px;
+		background-color: #e0e0e0;
+		border-radius: 2px;
+		margin-bottom: 20px;
+		overflow: auto;
+	}
+
+	div#output h5 span {
+		color: #f44336;
+	}
+
+	div#output div {
+		margin-bottom: 20px;
+	}
+
+	div#output div.gram h5 {
+		font-family: "Courier";
+		float: left;
+		width: 150px;
+		margin-right: 50px;
+	}
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Frequency Analysis</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Cipher Text :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+
+		<div id="div-options" class="hide">
+			<h5 class="left">Smallest repeated N-gram to show :</h5>
+			<input type="text" id="limit" class="small" maxlength="2" value="4">
+			<div class="clear"></div>
+			<div id="btn-count-for" class="select left">
+				<button class="grey">Count for : <span>Letters only</span></button>
+				<ul class="option">
+					<li>Letters only</li>
+					<li>Digits only</li>
+					<li>Letters and Digits</li>
+					<li>All Characters</li>
+				</ul>
+			</div>
+			<!-- TODO!!!!!!!!!!!
+			 
+			<div id="btn-sort" class="select left">
+				<button class="grey">Sort by : <span>Highest Frequency</span></button>
+				<ul class="option">
+					<li>Highest Frequency</li>
+					<li>Lowest Frequency</li>
+					<li>Alphabetically</li>
+				</ul>
+			</div>
+			-->
+			<button id="btn-paristocrat" class="left grey active">Ignore Spaces</button>
+		</div>
+		<div class="clear"></div>
+
+		<button id="btn-analyze" class="blue left">Start Analysis</button>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<button id="btn-options" class="grey right opt">Advanced Options</button>
+		<div class="clear"></div>
+
+		<div id="div-output" class="hide">
+			<h5>Output :</h5>
+			<div id="output">
+				<h5 id="char-count">Character Count : &emsp;<span></span></h5>
+				<div class="space"></div>
+				<h5>Letter Frequencies :</h5>
+				<div id="div-1-gram" class="gram"></div>
+				<div class="clear"></div>
+				<h5>Bigram :</h5>
+				<div id="div-2-gram" class="gram"></div>
+				<div class="clear"></div>
+				<h5>Trigram :</h5>
+				<div id="div-3-gram" class="gram"></div>
+				<div class="clear"></div>
+				<h5>Quadgram :</h5>
+				<div id="div-4-gram" class="gram"></div>
+			</div>
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

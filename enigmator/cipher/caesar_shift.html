@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Caesar Shift - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/qgr.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.caesar;
+
+	execute = function(){
+		var input = $("#input").val();
+		var shift = $("#shift span").text();
+		var str = method(input, shift);
+		$("#output").val(str);
+
+		$("#output").show();
+		$("#div-brute-force").empty();
+		$("#div-brute-force").hide();
+	}
+
+	function bruteForce(){
+		var ind = 1;
+		var input = $("#input").val();
+		var result = [];
+
+		$("#output").hide();
+		$("#div-brute-force").empty();
+		$("#div-brute-force").show();
+		for(var i=1; i < 26; i++){
+			var plain = Enigmator.caesar(input, i);
+			var score = Enigmator.cryptanalysis.scoreText(plain);
+			result.push([i, plain, score]);
+		}
+		result.sort(function(a, b){ return b[2] - a[2] });
+		for(var i=0; i < 25; i++){
+			var element = "<div id='output-"+ind+"'><h5 class='lighter'>Shift Key = "+result[i][0]+"</h5><textarea class='short' readonly>"+result[i][1]+"</textarea></div>";
+			$("#div-brute-force").append(element);
+			ind++;
+		}
+	}
+
+	$(document).ready(function(){
+		$("#btn-caesar").click(function(){
+			if(!$("#btn-brute-force").hasClass("active")){
+				execute();
+			}
+			else{
+				bruteForce();
+			}
+		})
+		/*$("#input").bind("change keydown keyup", function(){
+			if(!$("#btn-brute-force").hasClass("active")){
+				execute();
+			}
+		})*/
+		$("#btn-brute-force").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$(this).addClass("active");
+				$("#shift").hide();
+			}
+			else
+			{
+				$(this).removeClass("active");
+				$("#shift").show();
+			}
+		})
+		$("#btn-clear").click(function(){
+			$("#output").show();
+			$("#div-brute-force").empty();
+			$("#div-brute-force").hide();
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Caesar Shift</h2>
+		</div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<button id="btn-caesar" class="blue left">Encrypt / Decrypt</button>
+		<div class="select left">
+			<button id="shift" class="grey">Shift key : <span>13</span></button>
+			<ul class="option">
+				<li>1</li>
+				<li>2</li>
+				<li>3</li>
+				<li>4</li>
+				<li>5</li>
+				<li>6</li>
+				<li>7</li>
+				<li>8</li>
+				<li>9</li>
+				<li>10</li>
+				<li>11</li>
+				<li>12</li>
+				<li>13</li>
+				<li>14</li>
+				<li>15</li>
+				<li>16</li>
+				<li>17</li>
+				<li>18</li>
+				<li>19</li>
+				<li>20</li>
+				<li>21</li>
+				<li>22</li>
+				<li>23</li>
+				<li>24</li>
+				<li>25</li>
+			</ul>
+		</div>
+		<button id="btn-brute-force" class="left grey">Brute-Force Shift Key</button>
+		<div class="clear"></div>
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+		<div id="div-brute-force">
+			
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

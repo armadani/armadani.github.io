@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Crypto Identifier - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/crypto-identifier.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.cryptanalysis.identify;
+
+	function displayResult(result, type){
+		var noresult = false;
+
+		if(type == "cipher"){
+				
+			if(result.cipherAlgo !== undefined){
+				var element = "";
+				for(var i=0; i < result.cipherAlgo.length; i++){
+					element += "<li>"+result.cipherAlgo[i]+"</li>";
+				}
+				$("#cipher-type span").text(result.possibleCipher);
+				$("#cipher-type").show();
+				$("#cipher-algo h5").text("Most Common Ciphers : ");
+				$("#cipher-algo ul").html(element);
+			}
+			else {
+				var element = "";
+				for(var i=0; i < result.possibleCipher.length; i++){
+					element += "<li>"+result.possibleCipher[i]+"</li>";
+				}
+				$("#cipher-type").hide();
+				$("#cipher-algo h5").text("Possible Cipher : ");
+				$("#cipher-algo ul").html(element);
+			}
+			if(result.possibleCipher.length < 1)
+				noresult = true;
+			if(result.ic !== undefined){
+				$("#cipher-ic").show();
+				$("#cipher-ic span").text(result.ic);
+				$("#div-cipher h6").show();
+			}
+			else {
+				$("#cipher-ic").hide();
+				$("#div-cipher h6").hide();
+			}
+		}
+		else if(type == "encoding"){
+			var element = "";
+			for(var i=0; i < result.possibleEnc.length; i++){
+				element += "<li>"+result.possibleEnc[i]+"</li>";
+			}
+			$("#encoding-type").html(element);
+			if(result.possibleEnc.length < 1)
+				noresult = true;
+		}
+		else if(type == "hash"){
+			var element = "";
+			for(var i=0; i < result.possibleHash.length; i++){
+				element += "<li>"+result.possibleHash[i]+"</li>";
+			}
+			$("#hash-type").html(element);
+			if(result.possibleHash.length < 1)
+				noresult = true;
+		}
+		$("#div-output").show();
+		$("#output > div").hide();
+		if(noresult){
+			$("#div-noresult").show();
+		}
+		else {
+			$("#div-"+type).show();
+		}
+	}
+
+	$(document).ready(function(){
+
+		$("#btn-identify").click(function(){
+
+			var result = {};
+			var str = $("#input").val();
+			var type = $("#btn-type button span").text().toLowerCase();
+			
+			if(!$("#btn-input-file").hasClass("active")){
+				if(!str){
+					alert("Please, input text first.");
+					return;
+				}
+				else if(str.length < 20 && type == "cipher"){
+					alert("Input is too short to identify Cipher (min. 20 characters)");
+					return;
+				}
+				result = method(str, type);
+				displayResult(result, type);
+			}
+			else {
+				readFile(file, function(e){
+					input = arrayBufferToStr(e.target.result);
+					result = method(input, type);
+					displayResult(result, type);
+				});
+			}
+			
+
+			
+		})
+
+		$("#btn-input-file").click(function(){
+			$("#div-input-upload").show();
+			$("#input").hide();
+		})
+
+		$("#btn-input-raw").click(function(){
+			$("#div-input-upload").hide();
+			$("#input").show();
+		})
+
+		$("#btn-clear").click(function(){
+			$("#div-output").hide();
+		})
+
+	})
+</script>
+
+<style type="text/css">
+	div#output {
+		margin: 5px;
+		padding: 10px;
+		background-color: #e0e0e0;
+		border-radius: 2px;
+		margin-bottom: 20px;
+		overflow: auto;
+	}
+
+	div#output h5 span {
+		color: #f44336;
+	}
+
+	div#output ul {
+		margin: 5px;
+		padding-left: 20px;
+	}
+
+	div#output ul li {
+		list-style: outside;
+		margin: 0;
+		color: #f44336;
+	}
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Crypto Identifier</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5 class="left">Input :</h5>
+		<div class="toggle-button">
+			<button id="btn-input-raw" class="grey active small">Text</button>
+			<button id="btn-input-file" class="grey small">File</button>
+		</div>
+		<div class="clear"></div>
+		<textarea id="input" autofocus spellcheck="false" placeholder="Put any cryptic text such as Ciphertext, unknown Encoding, or even Hash"></textarea>
+		<input type="file" id="inputFile" class="hide">
+		<div class="input-upload hide" id="div-input-upload">
+			<label for="inputFile" class="button blue large">
+				Select File
+			</label>
+			<h5>No file selected</h5>
+		</div>
+		<div class="clear"></div>
+		<h6><i>Note : This tool can't identify Modern Cipher</i></h6>
+
+		<button id="btn-identify" class="blue large left">Identify</button>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div id="btn-type" class="select left">
+			<button class="grey">Identify for : <span>Cipher</span></button>
+			<ul class="option">
+				<li>Cipher</li>
+				<li>Encoding</li>
+				<li>Hash</li>
+			</ul>
+		</div>
+		<div class="clear"></div>
+
+		<div id="div-output" class="hide">
+			<h5>Output :</h5>
+			<div id="output">
+				<div id="div-cipher" class="hide">
+					<h5 id="cipher-type">Possible Cipher Type : &emsp;<span></span></h5>
+					<h5 id="cipher-ic">Index of Coincidence : &emsp;<span></span></h5>
+					<div id="cipher-algo">
+						<h5>Most Common Ciphers : </h5>
+						<ul></ul>
+					</div>
+					<div class="space"></div>
+					<h6><i>Note : This was calculated based on normal English text</i></h6>
+				</div>
+
+				<div id="div-encoding" class="hide">
+					<h5>Possible Encoding : </h5>
+					<ul id="encoding-type"></ul>
+				</div>
+
+				<div id="div-hash" class="hide">
+					<h5>Possible Hash : </h5>
+					<ul id="hash-type"></ul>
+					<!---<h5>Other Possible Hash : </h5>
+					<ul id="hash-other"></ul>-->
+				</div>
+
+				<div id="div-noresult" class="hide">
+					<h5><span>No result found.</span></h5>
+				</div>
+			</div>
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

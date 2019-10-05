@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>ADFGVX - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.adfgvx;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var grid = $("#grid").val();
+		var key = $("#key").val();
+
+		var str = methodType(input, key, grid);
+		$("#output").val(str);
+	}
+
+	function loadGrid(gridChar){
+		clearGrid();
+		var index = 0;
+		for(var i=1; i <= 6;i++){
+			var tr = $("#tr-row-"+i);
+			for(var j=0; j < 6;j++){
+				tr.append("<td>"+gridChar.charAt(index).toUpperCase()+"</td>");
+				index++;
+			}
+		}
+	}
+
+	function generateGrid(key){
+		key = key.toUpperCase().replace(/[^A-Z0-9]/g, "");
+		var alphabet =  key+"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+		var grid = [];
+		var character;
+		var index = 0;
+		for(var i=0; i < alphabet.length; i++){
+			character = alphabet.charAt(i);
+			if(grid.indexOf(character) == -1){
+				grid[index] = character;
+				index++;
+			}
+		}
+		grid = grid.join("");
+			
+		loadGrid(grid);
+		$("#grid").val(grid);
+	}
+
+	function clearGrid(){
+		var adfgvx = "ADFGVX";
+		for(var i=1; i <= 6;i++){
+			var tr = $("#tr-row-"+i);
+			tr.html("<td class='h'>"+adfgvx.charAt(i-1)+"</td>");
+		}
+	}
+
+	$(document).ready(function(){
+		loadGrid($("#grid").val());
+		$("#grid").prop("disabled", false);
+		$("#btn-enc").prop("disabled", false);
+
+		$("#grid").bind("change keyup keydown", function(){
+			loadGrid($(this).val());
+		});
+
+		$("#btn-preview").click(function(){
+			if(!$(this).hasClass("active")){
+				$(".grid").show();
+				$(this).addClass("active");
+			}
+			else
+			{
+				$(".grid").hide();
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#btn-use-keyword").click(function(){
+			if(!$(this).hasClass("active")){
+				$("#div-keyword").show();
+				$("#grid").prop("disabled", true);
+				$(this).addClass("active");
+				$("#keyword").focus();
+			}
+			else
+			{
+				$("#div-keyword").hide();
+				$("#grid").prop("disabled", false);
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#keyword").bind("change keyup keydown", function(){
+			generateGrid($(this).val());
+		})
+
+		$("#btn-clear").click(function(){
+			loadGrid("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+			$("#grid").val("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+		})
+
+		$("#btn-generate").click(function(){
+			var str = method.generateKey();
+			$("#grid").val(str);
+			$("#keyword").val(str);
+			loadGrid(str);
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>ADFGVX Cipher</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div class="clear"></div>
+		<div id="div-grid">
+			<div id="div-keyword" class="hide">
+				<h5>Keyword :</h5>
+				<input type="text" id="keyword" maxlength="36">
+				<div class="clear"></div>
+			</div>
+
+			<h5>Grid :</h5>
+			<input type="text" id="grid" value="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" maxlength="36">
+			<div class="clear"></div>
+			<button id="btn-preview" class="left grey">Preview</button>
+			<button id="btn-generate" class="left grey">Random Grid</button>
+			<button id="btn-use-keyword" class="left grey">Use Keyword</button>
+			<div class="clear"></div>
+			<table class="grid hide">
+				<tr>
+					<td class="h"></td>
+					<td class="h">A</td>
+					<td class="h">D</td>
+					<td class="h">F</td>
+					<td class="h">G</td>
+					<td class="h">V</td>
+					<td class="h">X</td>
+				</tr>
+				<tr id="tr-row-1"><td class="h">A</td></tr>
+				<tr id="tr-row-2"><td class="h">D</td></tr>
+				<tr id="tr-row-3"><td class="h">F</td></tr>
+				<tr id="tr-row-4"><td class="h">G</td></tr>
+				<tr id="tr-row-5"><td class="h">V</td></tr>
+				<tr id="tr-row-6"><td class="h">X</td></tr>
+			</table>
+		</div>
+		<div id="div-key">
+			<h5>Permutation Key :</h5>
+			<input type="text" id="key">
+			<div class="clear"></div>
+			<!--<h6 id="permutation" class="hide">Permutation will be : <b></b></h6>-->
+			<div class="clear"></div>
+		</div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+		<div id="div-brute-force">
+			
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

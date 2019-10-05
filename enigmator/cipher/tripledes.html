@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>TripleDES - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/rollups/tripledes.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-cfb-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-ecb-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-ctr-min.js"></script>
+<script type="text/javascript" src="../js/lib/cryptojs/components/mode-ofb-min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.tripledes;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var key = $("#key").val();
+		var iv = $("#iv").val();
+		var mode = $("#mode span").text();
+
+		if($("#div-iv").css("display") == "none")
+			var str = methodType(input, key, mode);
+		else
+			var str = methodType(input, key, mode, iv);
+		$("#output").val(str);
+	}
+
+	$(document).ready(function(){
+		$("#btn-openssl").click(function(){
+			if(!$(this).hasClass("active"))
+			{
+				$("#div-iv").hide();
+				$(this).addClass("active");
+			}
+			else
+			{
+				$("#div-iv").show();
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#iv").prop("disabled",false);
+
+		$("#mode .option li").click(function(){
+			if($("#mode span").text() == "ECB"){
+				$("#iv").prop("disabled",true);
+			}
+			else {
+				$("#iv").prop("disabled",false);
+			}
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>TripleDES</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<h5>Key :</h5>
+		<input type="text" id="key">
+		<div class="clear"></div>
+		<div id="div-iv">
+			<h5>Initial Vector (IV) :</h5>
+			<input type="text" id="iv" maxlength="32">
+			<div class="clear"></div>
+		</div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<button id="btn-openssl" class="grey left">OpenSSL Mode</button>
+		<div id="mode" class="select left">
+			<button class="grey">Mode : <span>CBC</span></button>
+			<ul class="option">
+				<li>CBC</li>
+				<li>ECB</li>
+				<li>CFB</li>
+				<li>CTR</li>
+				<li>OFB</li>
+			</ul>
+		</div>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+	</div></center>
+	</div>
+</body>
+</html>

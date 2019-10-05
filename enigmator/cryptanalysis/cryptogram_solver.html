@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Cryptogram Solver - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	function loadCharBox(){
+		var div = $("#div-character");
+		var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		var num = "0123456789";
+		var specialChars = "!#$%&\'\"()*+=,-./:;<>?@[]\\^_`{}|~";
+
+		div.empty();
+		for(var i=0; i < 26; i++){
+			div.append("<table class='grid left'><tr><td>"+alpha.charAt(i)+"</td></tr><tr><td><input type='text' maxlength='1' id='char-"+alpha.charCodeAt(i)+"' class='char-box'></td></tr></table>");
+		}
+		div.append("<div class='clear'></div>")
+		for(var i=0; i < 26; i++){
+			div.append("<table class='grid left hide char-alphabet-lower'><tr><td>"+alpha.charAt(i).toLowerCase()+"</td></tr><tr><td><input type='text' maxlength='1' id='char-"+alpha.toLowerCase().charCodeAt(i)+"' class='char-box'></td></tr></table>");
+		}
+		div.append("<div class='clear'></div>")
+		for(var i=0; i < 10; i++){
+			div.append("<table class='grid left hide char-number'><tr><td>"+num.charAt(i)+"</td></tr><tr><td><input type='text' maxlength='1' id='char-"+num.charCodeAt(i)+"' class='char-box'></td></tr></table>");
+		}
+		div.append("<div class='clear'></div>")
+		for(var i=0; i < specialChars.length; i++){
+			div.append("<table class='grid left hide char-special'><tr><td>"+specialChars.charAt(i)+"</td></tr><tr><td><input type='text' maxlength='1' id='char-"+specialChars.charCodeAt(i)+"' class='char-box'></td></tr></table>");
+		}
+		
+	}
+
+	function solve(){
+		var ciphertext = $("#input-sub").val();
+		if($("#btn-case").hasClass("active"))
+			ciphertext = ciphertext.toUpperCase();
+		var plaintext = "";
+		for(var i=0; i < ciphertext.length; i++){
+			var character = ciphertext.charAt(i);
+			var substitution = $("#char-"+character.charCodeAt(0)).val();
+			if(!substitution){
+				substitution = " ";
+			}
+			plaintext += substitution;
+		}
+		var element = "";
+		for(var i=0; i < plaintext.length; i++){
+			element += "<pre class='left'>"+plaintext.charAt(i)+"</pre>";
+		}
+		$("#output-plain").html(element);
+	}
+
+	function convertVertical(text, keyLen){
+		var newText = "";
+		var group = parseInt(text.length / keyLen);
+		console.log(group);
+		while((group * keyLen) < text.length){
+			group += 1;
+		}
+		var regex = new RegExp(".{1,"+group+"}","g");
+		text = text.match(regex);
+
+		for(var i=0; i < group; i++){
+			for(var j=0 ; j < text.length; j++){
+				newText += text[j].charAt(i);
+				if(!text[j].charAt(i))
+					newText += " ";
+			}
+		}
+		console.log(text);
+		console.log(group);
+		return newText;
+	}
+
+	function loadTable(text, keyLen, vertical){
+
+		if(vertical){
+			text = convertVertical(text, keyLen);
+		}
+
+		var index = 0;
+		var element = "<tr class='noselect'>";
+		for(var i=0; i < keyLen; i++){
+			element += "<th>"+i+"</th>";
+		}
+		element += "</tr>";
+		for(var i=0; i < text.length/keyLen; i++){
+			element += "<tr>";
+			for(var j=0; j < keyLen; j++){
+				element += "<td>"+text.charAt(index)+"</td>";
+				index++;
+			}
+			element += "</tr>";
+		}
+		$("#transposition").html(element);
+	}
+
+	function moveColumn(from, to){
+		$("#transposition tr").each(function() {
+    		var tr = $(this);
+    		var td1 = tr.find("th:eq("+from+"), td:eq("+from+")");
+    		var td2 = tr.find("th:eq("+to+"), td:eq("+to+")");
+    		if(from < to){
+    			td1.detach().insertAfter(td2);
+    		} else {
+    			td1.detach().insertBefore(td2);
+    		}
+		});
+	}
+
+	function readHorizontal(){
+		var plaintext = "";
+		var tbl = $("#transposition");
+		for(var i=0; i < tbl.find("td").length ;i++){
+			plaintext += tbl.find("td").eq(i).text();
+		}
+
+		return plaintext;
+	}
+
+	function readVertical(keyLen){
+		var plaintext = "";
+		var keyLen = parseInt(keyLen);
+		var tbl = $("#transposition");
+		var j = 0;
+		while(plaintext.length < $("#input-trans").val().length){
+			for(var i=j; i < tbl.find("td").length ;i+= keyLen){
+				plaintext += tbl.find("td").eq(i).text();
+			}
+			j++;
+		}
+
+		return plaintext;
+	}
+
+	$(document).ready(function(){
+		
+		$("#btn-mode-substitution").click(function(){
+			$("#div-substitution").show();
+			$("#div-transposition").hide();
+		})
+
+		$("#btn-mode-transposition").click(function(){
+			$("#div-substitution").hide();
+			$("#div-transposition").show();
+		})
+
+		$("#btn-generate-sub").click(function(){
+			if(!$("#input-sub").val()){
+				alert("Please, input Ciphertext first.");
+			}
+			else {
+				loadCharBox();
+				solve();
+				$("#div-cipher").hide();
+				$("#div-solver").show();
+				var element = "";
+				var ciphertext = $("#input-sub").val().replace(/[\n\r]/g, " ");
+				for(var i=0; i < ciphertext.length; i++){
+					element += "<pre class='left'>"+ciphertext.charAt(i)+"</pre>";
+				}
+
+				var parentW = $("#output-sub").width();
+				$("#output-plain, #output-cipher").width(parentW);
+				$("#output-cipher").html(element);
+			}
+		})
+
+		$(document).on("keyup", "input.char-box", function(e){
+			solve();
+		})
+
+		$(document).on("click", "#div-character .grid tr:last-child td", function(){
+			$(this).find("input").focus();
+		})
+
+		$("#btn-show-num, #btn-case, #btn-special-chars").click(function(e){
+			if(!$(this).hasClass("active")){
+				$(this).addClass("active");
+				if(e.target.id == "btn-show-num")
+					$(".char-number").show();
+				else if(e.target.id == "btn-case")
+					$(".char-alphabet-lower").hide();
+				else if(e.target.id == "btn-special-chars")
+					$(".char-special").show();
+			}
+			else {
+				$(this).removeClass("active");
+				if(e.target.id == "btn-show-num")
+					$(".char-number").hide();
+				else if(e.target.id == "btn-case")
+					$(".char-alphabet-lower").show();
+				else if(e.target.id == "btn-special-chars")
+					$(".char-special").hide();
+			}
+		})
+
+		$("#btn-change-sub").click(function(){
+			$("#div-cipher").show();
+			$("#div-solver").hide();
+		})
+
+		$("#btn-reset-sub").click(function(){
+			$(".char-box").val("");
+			solve();
+		})
+
+		$("#btn-generate-trans").click(function(){
+			var text = $("#input-trans").val();
+			var key = $("#trans-key").val();
+			var switchType = $("#btn-type button span").text();
+			
+			if(key < 1){
+				alert("Key length must be greater than 0.");
+				return false;
+			}
+			else if(isNaN(key)) {
+				alert("Key length must be an integer.");
+				return false;
+			}
+
+			if(switchType == "Vertical"){
+				loadTable(text, key, true);
+			} else {
+				loadTable(text, key, false);
+			}
+
+			$("#div-table").show();
+		})
+
+		$(document).on("click", "#transposition tr th", function(){
+			if(!$("#transposition tr th.active").length){
+				$(this).addClass("active");
+			}
+			else
+			{
+				if(!$(this).hasClass("active")){
+					var from = $("#transposition tr th.active").index();
+					var to = $(this).index();
+					moveColumn(from, to);
+				}
+				$("#transposition tr .active").removeClass("active");
+			}
+		})
+
+		$(window).on("resize", function(){
+			var parentW = $("#output-sub").width();
+			$("#output-plain, #output-cipher").width(parentW);
+		});
+
+		$("#btn-read-horizontal").click(function(){
+			$("#output").val(readHorizontal());
+		})
+
+		$("#btn-read-vertical").click(function(){
+			var key = $("#trans-key").val();
+			$("#output").val(readVertical(key));
+		})
+
+		$("#btn-reset-trans").click(function(){
+			$("#input-trans").val("");
+			$("#trans-key").val("");
+			$("#output").val("");
+			$("#div-table").hide();
+		})
+	})
+</script>
+
+<style type="text/css">
+	#div-character {
+		margin: 5px;
+		overflow: visible;
+	}
+
+	#div-character .grid {
+		margin: 0 -2px -2px 0;
+	}
+
+	#div-character .grid tr:first-child {
+		background-color: #f44336;
+		color: #FFF;
+	}
+
+	#div-character .grid tr:last-child td {
+		cursor: text;
+	}
+
+	#div-character .grid td {
+		padding: 4px;
+		font-size: 14px;
+	}
+
+	div.box {
+		margin: 5px;
+		float: left;
+		width: 24px;
+		height: 24px;
+		border: solid 1px #212121;
+	}
+
+	div.box.red {
+		border: solid 1px #f44336;
+		background-color: #f44336;
+	}
+
+	div#output-sub {
+		margin: 5px;
+		padding: 5px;
+		background-color: #e0e0e0;
+		overflow: hidden;
+	}
+
+	div#output-sub #output-cipher {
+		position: relative;
+		width: 790px;
+	}
+
+	div#output-sub #output-cipher pre, div#output-sub #output-plain pre {
+		font-family: "Courier";
+		font-weight: bold;
+		font-size: 16px;
+		margin: 20px 0 20px 0;
+		color: #f44336;
+		width: auto;
+	}
+
+	div#output-sub #output-plain {
+		position: absolute;
+		width: 790px;
+	}
+
+	div#output-sub #output-plain pre {
+		color: #000;
+		margin: 0 0 40px 0;
+	}
+
+	table#transposition {
+		margin: 5px;
+		border-collapse: collapse;
+	}
+
+	table#transposition tr td, table#transposition tr th {
+		border: solid 2px #434A54;
+		text-align: center;
+		width: 20px;
+		padding: 5px;
+		margin: 0;
+	}
+
+	table#transposition tr th {
+		background-color: #f44336;
+		color: #FFF;
+		cursor: pointer;
+	}
+
+	table#transposition tr th:hover {
+		background-color: #ef5350;
+	}
+
+	table#transposition tr th.active {
+		background-color: #e57373;
+	}
+
+	table#transposition tr td.active {
+		background-color: #e0e0e0;
+	}
+
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis" class="selected"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cryptanalysis</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher" class="hide">
+			
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis">
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Cryptogram Solver</h2>
+		</div>
+
+		<div class="toggle-button">
+			<button id="btn-mode-substitution" class="grey active">Substitution</button>
+			<button id="btn-mode-transposition" class="grey">Transposition</button>
+		</div>
+		<div class="clear"></div>
+
+		<div id="div-substitution">
+
+			<div id="div-cipher">
+				<h5>Cipher Text :</h5>
+				<textarea id="input-sub" autofocus spellcheck="false"></textarea>
+				<button id="btn-generate-sub" class="blue left">Generate Solver</button>
+			</div>
+			<div id="div-solver" class="hide">
+				<div class="space"></div>
+				<div class="box red"></div><h5 class="left">: Ciphertext</h5>
+				<div class="box"></div><h5 class="left">: Plaintext</h5>
+				<div class="clear"></div>
+				<div id="div-character">
+					<table class="grid left"></table>
+				</div>
+				<div class="clear"></div><div class="space"></div>
+				<!--
+				<div id="btn-sort" class="select left">
+					<button class="grey">Sort by : <span>Ciphertext</span></button>
+					<ul class="option">
+						<li>Ciphertext</li>
+						<li>Plaintext</li>
+					</ul>
+				</div>
+				-->
+				<button id="btn-case" class="grey active left">Ignore Case</button>
+				<button id="btn-show-num" class="grey left">Use Numbers</button>
+				<button id="btn-special-chars" class="grey left">Special Characters</button>
+				<div class="clear"></div>
+
+				<div id="output-sub">
+					<div id="output-cipher" class="noselect"></div>
+					<div id="output-plain"></div>
+				</div>
+				<button id="btn-change-sub" class="grey left">Change Ciphertext</button>
+				<button id="btn-reset-sub" class="grey large left">Reset</button>
+			</div>
+		</div>
+
+		<div id="div-transposition" class="hide">
+			<h5>Cipher Text :</h5>
+			<textarea id="input-trans" spellcheck="false"></textarea>
+			<div class="clear"></div>
+			<h5 class="left">Key Length :</h5>
+			<input type="text" id="trans-key" class="small" maxlength="2">
+			<div class="clear"></div>
+			<button id="btn-generate-trans" class="blue left">Load Table</button>
+			<div id="btn-type" class="select left">
+				<button class="grey">Table Switch : <span>Horizontal</span></button>
+				<ul class="option">
+					<li>Horizontal</li>
+					<li>Vertical</li>
+				</ul>
+			</div>
+			<div class="clear"></div>
+
+			<div id="div-table" class="hide">
+				<table id="transposition">
+				</table>
+				<h6><i>Note : To re-order columns, click on the red box of the column you want to switch its position</i></h6>
+				<button id="btn-read-horizontal" class="grey left">Read Horizontally</button>
+				<button id="btn-read-vertical" class="grey left">Read Vertically</button>
+				<div class="clear"></div>
+				<h5>Output :</h5>
+				<textarea id="output" spellcheck="false" readonly></textarea>
+				<button id="btn-reset-trans" class="grey large left">Reset</button>
+			</div>
+		</div>
+
+	</div></center>
+	</div>
+</body>
+</html>

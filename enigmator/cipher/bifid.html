@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Bifid - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.bifid;
+
+	execute = function(methodType){
+		var input = $("#input").val();
+		var keysquare = $("#keysquare").val();
+		var period = $("#period").val();
+
+		if(keysquare.length != 25){
+			alert("Keysquare must be 25 characters in length");
+			return false;
+		}
+		if(isNaN(period) || period < 1){
+			alert("Period must be an integer and greater than 0");
+			return false;
+		}
+
+
+		var str = methodType(input, keysquare, period);
+		$("#output").val(str);
+	}
+
+	function loadSquare(key){
+		clearSquare();
+		var index = 0;
+		for(var i=1; i <= 5;i++){
+			var tr = $("#tr-row-"+i);
+			for(var j=0; j < 5;j++){
+				tr.append("<td>"+key.charAt(index).toUpperCase()+"</td>");
+				index++;
+			}
+		}
+	}
+
+	function clearSquare(){
+		for(var i=1; i <= 5;i++){
+			var tr = $("#tr-row-"+i);
+			tr.html("<td class='h'>"+i+"</td>");
+		}
+	}
+
+	$(document).ready(function(){
+		loadSquare($("#keysquare").val());
+
+		$("#keysquare").bind("change keyup keydown", function(){
+			loadSquare($(this).val());
+		});
+
+		$("#btn-preview").click(function(){
+			if(!$(this).hasClass("active")){
+				$(".grid").show();
+				$(this).addClass("active");
+			}
+			else
+			{
+				$(".grid").hide();
+				$(this).removeClass("active");
+			}
+		})
+
+		$("#btn-clear").click(function(){
+			loadSquare("");
+		})
+
+		$("#btn-generate").click(function(){
+			var str = method.generateKey();
+			$("#keysquare").val(str);
+			loadSquare(str);
+		})
+	})
+</script>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Bifid Cipher</h2>
+		</div>
+
+		<div class="clear"></div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div class="clear"></div>
+		<div id="div-square">
+			<h5>Keysquare :</h5>
+			<input type="text" id="keysquare" value="ABCDEFGHIKLMNOPQRSTUVWXYZ" maxlength="25">
+			<div class="clear"></div>
+			<h6><i>Note : Letter "J" will be replaced with "I"</i></h6>
+			<button id="btn-preview" class="left grey">Preview</button>
+			<button id="btn-generate" class="left grey">Random Keysquare</button>
+			<div class="clear"></div>
+			<table class="grid hide">
+				<tr>
+					<td class="h"></td>
+					<td class="h">1</td>
+					<td class="h">2</td>
+					<td class="h">3</td>
+					<td class="h">4</td>
+					<td class="h">5</td>
+				</tr>
+				<tr id="tr-row-1"><td class="h">1</td></tr>
+				<tr id="tr-row-2"><td class="h">2</td></tr>
+				<tr id="tr-row-3"><td class="h">3</td></tr>
+				<tr id="tr-row-4"><td class="h">4</td></tr>
+				<tr id="tr-row-5"><td class="h">5</td></tr>
+			</table>
+		</div>
+		<div id="div-period">
+			<h5 class="left">Period :</h5>
+			<input type="text" id="period" class="small" maxlength="2" value="5">
+			<div class="clear"></div>
+		</div>
+
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<div class="clear"></div>
+
+		<h5>Output :</h5>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<div class="clear"></div>
+		<div id="div-brute-force">
+			
+		</div>
+	</div></center>
+	</div>
+</body>
+</html>

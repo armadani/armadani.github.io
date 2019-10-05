@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="../css/font.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/jquery-ui.css">
+<link rel="icon" href="../img/icon.png">
+<title>Vigenère - Enigmator</title>
+</head>
+
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../js/enigmator.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript">
+	method = Enigmator.vigenere;
+
+	execute = function(methodType){
+		if(methodType == method.dec && $("#btn-crack").hasClass("active")){
+			crack();
+			return;
+		}
+
+		var input = $("#input").val();
+		var key = $("#key").val();
+		var str = methodType(input, key);
+		$("#output").val(str);
+		$("#div-crack").hide();
+		$("#btn-try-other-key-length").hide();
+	}
+	var index = 0;
+	var selectedKeyLength, possibleKeyLength, possibleKeys;
+
+	function crack(){
+		var ciphertext = $("#input").val();
+		var maxKeyLength = $("#max-key").val();
+		if(isNaN(maxKeyLength)){
+			maxKeyLength = 30;
+		}
+
+		possibleKeyLength = Enigmator.vigenere.crack.findKeyLength(ciphertext, maxKeyLength);
+		selectedKeyLength = possibleKeyLength[index];
+		if(possibleKeyLength.length >= 1){
+			possibleKeys = Enigmator.vigenere.crack.findKey(ciphertext, selectedKeyLength);
+			crackDecrypt();
+		}
+		else {
+			alert("Key not found.");
+			return;
+		}
+	}
+
+	function nextKeyLength(){
+		var ciphertext = $("#input").val();
+		index++;
+		if(possibleKeyLength[index] == undefined){
+			index = 0;
+		}
+		selectedKeyLength = possibleKeyLength[index];
+		possibleKeys = Enigmator.vigenere.crack.findKey(ciphertext, selectedKeyLength);
+		crackDecrypt();
+	}
+
+	function generateKeysTable(){
+		var currentKey = "";
+
+		$("tr").empty();
+		for(var i=0; i < 3; i++){
+			var tr = $("#tr-row-"+(i+1));
+			for(var j=0; j < possibleKeys.length; j++){
+				if(i == 0)
+					tr.append("<td class='td-"+j+" selected'>"+possibleKeys[j][i]+"</td>");
+				else
+					tr.append("<td class='td-"+j+"'>"+possibleKeys[j][i]+"</td>");
+				
+			}
+		}
+	}
+
+	function crackDecrypt(){
+		var ciphertext = $("#input").val();
+		var selectedKey = "";
+
+		generateKeysTable();
+
+		for(var i=0; i < possibleKeys.length; i++){
+			selectedKey += possibleKeys[i][0];
+		}
+
+		var plaintext = Enigmator.vigenere.dec(ciphertext, selectedKey);
+
+		$("#h5-key-length").text("Possible key length = "+selectedKeyLength);
+		$("#h5-key").text("Current key = "+selectedKey);
+		$("#output").val(plaintext);
+		$("#div-crack").show();
+		$("#btn-try-other-key-length").show();
+	}
+
+	function updateCrack(){
+		var ciphertext = $("#input").val();
+		var selectedKey = "";
+
+		for(var i=0; i < selectedKeyLength; i++){
+			$("td.td-"+i+".selected").each(function(){
+				selectedKey += $(this).text();
+			})
+		}
+		var plaintext = Enigmator.vigenere.dec(ciphertext, selectedKey);
+
+		$("#h5-key").text("Current key = "+selectedKey);
+		$("#output").val(plaintext);
+	}
+
+	$(document).ready(function(){
+
+		$("#btn-enc").prop("disabled", false);
+
+		$(document).on("click","table.grid td", function(){
+			var thisClass = $(this).attr("class");
+			$("td."+thisClass).removeClass("selected");
+			$(this).addClass("selected");
+
+			updateCrack();
+		})
+
+		$("#btn-crack").click(function(){
+			if(!$(this).hasClass("active")){
+				$(this).addClass("active");
+				$("#div-key").hide();
+				$("#div-max-key").show();
+				$("#btn-enc").prop("disabled", true);
+			}
+			else {
+				$(this).removeClass("active");
+				$("#div-key").show();
+				$("#div-max-key").hide();
+				$("#btn-enc").prop("disabled", false);
+			}
+		})
+
+		$("#btn-try-other-key-length").click(function(){
+			nextKeyLength();
+		});
+
+		$("#btn-clear").click(function(){
+			$("#div-crack").hide();
+			$("#btn-try-other-key-length").hide();
+		})
+	})
+</script>
+
+<style type="text/css">
+	table.grid td {
+		cursor: pointer;
+	}
+
+	table.grid td:hover {
+		background-color: #e0e0e0;
+	}
+
+	table.grid td.selected {
+		font-weight: bold;
+		background-color: #bdbdbd;
+	}
+</style>
+
+<body>
+	<div class="header">
+		<center><a href="../index.html"><img src="../img/title.png"></a></center>
+	</div>
+
+	<div class="menubar noselect">
+	<div class="menu">
+		<ul>
+			<li id="btn-cipher" class="selected"><img src="../img/key.png"></li>
+			<li id="btn-encoding"><img src="../img/encoder.png"></li>
+			<li id="btn-hash"><img src="../img/hash.png"></li>
+			<li id="btn-cryptanalysis"><img src="../img/text.png"></li>
+			<li id="btn-about"><img src="../img/information.png"></li>
+		</ul>
+	</div>
+
+	<div class="sub-menu">
+		<h2 id="sub-menu-title">Cipher</h2>
+		<ul id="menu-encoding" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cipher">
+		</ul>
+
+		<ul id="menu-hash" class="hide">
+			
+		</ul>
+
+		<ul id="menu-cryptanalysis" class="hide">
+			
+		</ul>
+
+		<ul id="menu-about" class="hide">
+			
+		</ul>
+
+	</div>
+	</div>
+
+	<div class="content">
+	<center><div class="main">
+		<div class="title">
+			<h2>Vigenère Cipher</h2>
+		</div>
+
+		<h5>Input :</h5>
+		<textarea id="input" autofocus spellcheck="false"></textarea>
+		<div id="div-key">
+			<h5>Key :</h5>
+			<input type="text" id="key">
+		</div>
+		<div id="div-max-key" class="hide">
+			<h5 class="left">Max Key Length :</h5>
+			<input type="text" id="max-key" class="small" value="30" maxlength="3">
+		</div>
+		<div class="clear"></div>
+		<button id="btn-enc" class="red left">Encrypt</button>
+		<button id="btn-dec" class="blue left">Decrypt</button>
+		<button id="btn-crack" class="grey left">Crack without key</button>
+		<div class="clear"></div>
+		<h5>Output :</h5>
+		<div id="div-crack" class="hide">
+			<h5 id="h5-key-length"></h5>
+			<h5>All possible keys : </h5>
+			<div id="div-keys-table">
+				<table class="grid keys">
+					<tr id="tr-row-1"></tr>
+					<tr id="tr-row-2"></tr>
+					<tr id="tr-row-3"></tr>
+				</table>
+			</div>
+			<h5 id="h5-key"></h5>
+		</div>
+		<div class="clear"></div>
+		<textarea id="output" readonly></textarea>
+		<button id="btn-clear" class="grey left large">Clear</button>
+		<button id="btn-try-other-key-length" class="grey left hide">Try other key length</button>
+	</div></center>
+	</div>
+</body>
+</html>
